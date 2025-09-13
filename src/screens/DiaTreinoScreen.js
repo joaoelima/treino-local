@@ -6,6 +6,7 @@ import {
   FlatList,
   Modal,
   TextInput,
+  StyleSheet,
 } from "react-native";
 
 export default function DiaTreinoScreen({
@@ -30,21 +31,17 @@ export default function DiaTreinoScreen({
   };
 
   return (
-    <View style={{ flex: 1, padding: 20 }}>
+    <View style={styles.container}>
       <TouchableOpacity onPress={voltar} style={{ marginBottom: 10 }}>
         <Text style={{ color: "blue" }}>⬅ Voltar</Text>
       </TouchableOpacity>
-      <Text style={{ fontSize: 20, fontWeight: "bold", marginBottom: 10 }}>
-        {dia}
-      </Text>
+      <Text style={styles.titulo}>{dia}</Text>
       <FlatList
         data={treinos[dia]}
         keyExtractor={(item, index) => index.toString()}
         renderItem={({ item }) => (
-          <View
-            style={{ padding: 10, borderBottomWidth: 1, borderColor: "#ccc" }}
-          >
-            <Text style={{ fontSize: 16 }}>
+          <View style={styles.item}>
+            <Text style={styles.texto}>
               {item.nome} - {item.series}
             </Text>
           </View>
@@ -52,60 +49,101 @@ export default function DiaTreinoScreen({
       />
       <TouchableOpacity
         onPress={() => setModalVisible(true)}
-        style={{
-          backgroundColor: "orange",
-          padding: 10,
-          marginVertical: 10,
-          borderRadius: 8,
-        }}
+        style={styles.botaoAdicionar}
       >
-        <Text style={{ textAlign: "center", color: "#fff" }}>
-          Adicionar Exercício
-        </Text>
+        <Text style={styles.textoBotao}>Adicionar Exercício</Text>
       </TouchableOpacity>
-      <TouchableOpacity
-        onPress={registrarTreino}
-        style={{ backgroundColor: "green", padding: 10, borderRadius: 8 }}
-      >
-        <Text style={{ textAlign: "center", color: "#fff" }}>
-          Concluir Treino
-        </Text>
+      <TouchableOpacity onPress={registrarTreino} style={styles.botaoConcluir}>
+        <Text style={styles.textoBotao}>Concluir Treino</Text>
       </TouchableOpacity>
 
       <Modal visible={modalVisible} animationType="slide">
-        <View style={{ flex: 1, padding: 20 }}>
-          <Text style={{ fontSize: 20, marginBottom: 10 }}>Novo Exercício</Text>
+        <View style={styles.modalContainer}>
+          <Text style={styles.tituloModal}>Novo Exercício</Text>
           <TextInput
             placeholder="Nome"
             value={novoExercicio}
             onChangeText={setNovoExercicio}
-            style={{ borderWidth: 1, marginBottom: 10, padding: 8 }}
+            style={styles.input}
           />
           <TextInput
             placeholder="Séries"
             value={novaSerie}
             onChangeText={setNovaSerie}
-            style={{ borderWidth: 1, marginBottom: 10, padding: 8 }}
+            style={styles.input}
           />
           <TouchableOpacity
             onPress={adicionarExercicio}
-            style={{
-              backgroundColor: "green",
-              padding: 10,
-              borderRadius: 8,
-              marginBottom: 10,
-            }}
+            style={styles.botaoConcluir}
           >
-            <Text style={{ color: "#fff", textAlign: "center" }}>Salvar</Text>
+            <Text style={styles.textoBotao}>Salvar</Text>
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => setModalVisible(false)}
-            style={{ backgroundColor: "red", padding: 10, borderRadius: 8 }}
+            style={styles.botaoCancelar}
           >
-            <Text style={{ color: "#fff", textAlign: "center" }}>Cancelar</Text>
+            <Text style={styles.textoBotao}>Cancelar</Text>
           </TouchableOpacity>
         </View>
       </Modal>
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#fff", // Força fundo branco
+    padding: 20,
+  },
+  titulo: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginBottom: 10,
+  },
+  item: {
+    padding: 10,
+    borderBottomWidth: 1,
+    borderColor: "#ccc",
+  },
+  texto: {
+    fontSize: 16,
+  },
+  botaoAdicionar: {
+    backgroundColor: "orange",
+    padding: 10,
+    marginVertical: 10,
+    borderRadius: 8,
+  },
+  botaoConcluir: {
+    backgroundColor: "green",
+    padding: 10,
+    borderRadius: 8,
+    marginTop: 5,
+  },
+  botaoCancelar: {
+    backgroundColor: "red",
+    padding: 10,
+    borderRadius: 8,
+    marginTop: 5,
+  },
+  textoBotao: {
+    textAlign: "center",
+    color: "#fff",
+  },
+  modalContainer: {
+    flex: 1,
+    backgroundColor: "#fff", // Modal também com fundo branco
+    padding: 20,
+  },
+  tituloModal: {
+    fontSize: 20,
+    marginBottom: 10,
+  },
+  input: {
+    borderWidth: 1,
+    marginBottom: 10,
+    padding: 8,
+    borderRadius: 5,
+  },
+});
