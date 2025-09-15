@@ -4,9 +4,7 @@ import {
   Text,
   TouchableOpacity,
   FlatList,
-  Modal,
   TextInput,
-  StyleSheet,
 } from "react-native";
 
 export default function DiaTreinoScreen({
@@ -16,196 +14,152 @@ export default function DiaTreinoScreen({
   registrarTreino,
   voltar,
 }) {
-  const [modalVisible, setModalVisible] = useState(false);
-  const [editandoIndex, setEditandoIndex] = useState(null);
-  const [novoExercicio, setNovoExercicio] = useState("");
-  const [novaSerie, setNovaSerie] = useState("");
-  const [checked, setChecked] = useState(
-    treinos[dia].map(() => false) // inicia todos como "não concluído"
-  );
+  const [editando, setEditando] = useState(false);
+  const [listaEditavel, setListaEditavel] = useState([...treinos[dia]]);
 
-  // Adicionar ou editar exercício
-  const salvarExercicio = () => {
-    if (!novoExercicio) return;
-    const novos = { ...treinos };
-
-    if (editandoIndex !== null) {
-      // edição
-      novos[dia][editandoIndex] = { nome: novoExercicio, series: novaSerie };
-    } else {
-      // novo
-      novos[dia].push({ nome: novoExercicio, series: novaSerie });
-      setChecked([...checked, false]); // adiciona check vazio para o novo
-    }
-
+  const salvarEdicao = () => {
+    const novos = { ...treinos, [dia]: listaEditavel };
     salvarTreinos(novos);
-    setNovoExercicio("");
-    setNovaSerie("");
-    setEditandoIndex(null);
-    setModalVisible(false);
+    setEditando(false);
   };
 
-  // Excluir exercício
-  const excluirExercicio = (index) => {
-    const novos = { ...treinos };
-    novos[dia].splice(index, 1);
+  const excluirTodos = () => {
+    const novos = { ...treinos, [dia]: [] };
     salvarTreinos(novos);
-
-    const novosChecks = [...checked];
-    novosChecks.splice(index, 1);
-    setChecked(novosChecks);
+    setEditando(false);
   };
-
-  // Editar exercício
-  const editarExercicio = (item, index) => {
-    setNovoExercicio(item.nome);
-    setNovaSerie(item.series);
-    setEditandoIndex(index);
-    setModalVisible(true);
-  };
-
-  // Marcar exercício concluído
-  const toggleCheck = (index) => {
-    const novosChecks = [...checked];
-    novosChecks[index] = !novosChecks[index];
-    setChecked(novosChecks);
-  };
-
-  // Só libera concluir se todos marcados
-  const todosConcluidos = checked.every((c) => c);
 
   return (
-    <View style={styles.container}>
+    <View style={{ flex: 1, padding: 20, backgroundColor: "#fff" }}>
       <TouchableOpacity onPress={voltar} style={{ marginBottom: 10 }}>
         <Text style={{ color: "blue" }}>⬅ Voltar</Text>
       </TouchableOpacity>
-      <Text style={styles.titulo}>{dia}</Text>
+
+      <Text style={{ fontSize: 20, fontWeight: "bold", marginBottom: 10 }}>
+        {dia}
+      </Text>
 
       <FlatList
-        data={treinos[dia]}
-        keyExtractor={(item, index) => index.toString()}
+        data={editando ? listaEditavel : treinos[dia]}
+        keyExtractor={(_, index) => index.toString()}
         renderItem={({ item, index }) => (
-          <View style={styles.item}>
-            <TouchableOpacity onPress={() => toggleCheck(index)}>
+          <View
+            style={{
+              padding: 10,
+              borderBottomWidth: 1,
+              borderColor: "#ccc",
+            }}
+          >
+            {editando ? (
+              <>
+                <TextInput
+                  value={item.nome}
+                  onChangeText={(txt) => {
+                    const novaLista = [...listaEditavel];
+                    novaLista[index].nome = txt;
+                    setListaEditavel(novaLista);
+                  }}
+                  style={{
+                    borderWidth: 1,
+                    padding: 8,
+                    marginBottom: 5,
+                    borderRadius: 5,
+                  }}
+                />
+                <TextInput
+                  value={item.series}
+                  onChangeText={(txt) => {
+                    const novaLista = [...listaEditavel];
+                    novaLista[index].series = txt;
+                    setListaEditavel(novaLista);
+                  }}
+                  style={{
+                    borderWidth: 1,
+                    padding: 8,
+                    borderRadius: 5,
+                  }}
+                />
+              </>
+            ) : (
               <Text style={{ fontSize: 16 }}>
-                {checked[index] ? "✅" : "⬜"} {item.nome} - {item.series}
+                {item.nome} - {item.series}
               </Text>
-            </TouchableOpacity>
-            <View style={styles.acoes}>
-              <TouchableOpacity
-                onPress={() => editarExercicio(item, index)}
-                style={styles.botaoEditar}
-              >
-                <Text style={styles.textoBotao}>Editar</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => excluirExercicio(index)}
-                style={styles.botaoExcluir}
-              >
-                <Text style={styles.textoBotao}>Excluir</Text>
-              </TouchableOpacity>
-            </View>
+            )}
           </View>
         )}
       />
 
-      <TouchableOpacity
-        onPress={() => setModalVisible(true)}
-        style={styles.botaoAdicionar}
-      >
-        <Text style={styles.textoBotao}>Adicionar Exercício</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity
-        onPress={registrarTreino}
-        style={[
-          styles.botaoConcluir,
-          { backgroundColor: todosConcluidos ? "green" : "gray" },
-        ]}
-        disabled={!todosConcluidos}
-      >
-        <Text style={styles.textoBotao}>Concluir Treino</Text>
-      </TouchableOpacity>
-
-      {/* Modal para adicionar/editar */}
-      <Modal visible={modalVisible} animationType="slide">
-        <View style={styles.modalContainer}>
-          <Text style={styles.tituloModal}>
-            {editandoIndex !== null ? "Editar Exercício" : "Novo Exercício"}
-          </Text>
-          <TextInput
-            placeholder="Nome"
-            value={novoExercicio}
-            onChangeText={setNovoExercicio}
-            style={styles.input}
-          />
-          <TextInput
-            placeholder="Séries"
-            value={novaSerie}
-            onChangeText={setNovaSerie}
-            style={styles.input}
-          />
+      {!editando ? (
+        <>
           <TouchableOpacity
-            onPress={salvarExercicio}
-            style={styles.botaoConcluir}
-          >
-            <Text style={styles.textoBotao}>Salvar</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => {
-              setModalVisible(false);
-              setEditandoIndex(null);
+            onPress={() => setEditando(true)}
+            style={{
+              backgroundColor: "blue",
+              padding: 12,
+              borderRadius: 8,
+              marginVertical: 5,
             }}
-            style={styles.botaoCancelar}
           >
-            <Text style={styles.textoBotao}>Cancelar</Text>
+            <Text style={{ color: "#fff", textAlign: "center" }}>Editar</Text>
           </TouchableOpacity>
-        </View>
-      </Modal>
+
+          <TouchableOpacity
+            onPress={excluirTodos}
+            style={{
+              backgroundColor: "red",
+              padding: 12,
+              borderRadius: 8,
+              marginVertical: 5,
+            }}
+          >
+            <Text style={{ color: "#fff", textAlign: "center" }}>
+              Excluir Todos
+            </Text>
+          </TouchableOpacity>
+        </>
+      ) : (
+        <>
+          <TouchableOpacity
+            onPress={salvarEdicao}
+            style={{
+              backgroundColor: "green",
+              padding: 12,
+              borderRadius: 8,
+              marginVertical: 5,
+            }}
+          >
+            <Text style={{ color: "#fff", textAlign: "center" }}>Salvar</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() => setEditando(false)}
+            style={{
+              backgroundColor: "gray",
+              padding: 12,
+              borderRadius: 8,
+              marginVertical: 5,
+            }}
+          >
+            <Text style={{ color: "#fff", textAlign: "center" }}>Cancelar</Text>
+          </TouchableOpacity>
+        </>
+      )}
+
+      {!editando && (
+        <TouchableOpacity
+          onPress={registrarTreino}
+          style={{
+            backgroundColor: "green",
+            padding: 12,
+            borderRadius: 8,
+            marginTop: 15,
+          }}
+        >
+          <Text style={{ textAlign: "center", color: "#fff" }}>
+            Concluir Treino
+          </Text>
+        </TouchableOpacity>
+      )}
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff", padding: 20 },
-  titulo: { fontSize: 20, fontWeight: "bold", marginBottom: 10 },
-  item: {
-    padding: 10,
-    borderBottomWidth: 1,
-    borderColor: "#ccc",
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  acoes: { flexDirection: "row" },
-  botaoEditar: {
-    backgroundColor: "blue",
-    padding: 5,
-    marginHorizontal: 5,
-    borderRadius: 5,
-  },
-  botaoExcluir: {
-    backgroundColor: "red",
-    padding: 5,
-    borderRadius: 5,
-  },
-  botaoAdicionar: {
-    backgroundColor: "orange",
-    padding: 10,
-    marginVertical: 10,
-    borderRadius: 8,
-  },
-  botaoConcluir: {
-    padding: 10,
-    borderRadius: 8,
-  },
-  textoBotao: { color: "#fff", textAlign: "center" },
-  modalContainer: { flex: 1, backgroundColor: "#fff", padding: 20 },
-  tituloModal: { fontSize: 20, marginBottom: 10 },
-  input: {
-    borderWidth: 1,
-    marginBottom: 10,
-    padding: 8,
-    borderRadius: 5,
-  },
-});
