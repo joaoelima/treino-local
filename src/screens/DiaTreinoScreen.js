@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -6,6 +6,7 @@ import {
   FlatList,
   TextInput,
 } from "react-native";
+import CheckBox from "expo-checkbox";
 
 export default function DiaTreinoScreen({
   dia,
@@ -16,6 +17,15 @@ export default function DiaTreinoScreen({
 }) {
   const [editando, setEditando] = useState(false);
   const [listaEditavel, setListaEditavel] = useState([...treinos[dia]]);
+  const [checks, setChecks] = useState(
+    treinos[dia].map(() => false) // todos desmarcados no início
+  );
+
+  // Atualiza checks se a lista de treinos mudar
+  useEffect(() => {
+    setChecks(treinos[dia].map(() => false));
+    setListaEditavel([...treinos[dia]]);
+  }, [dia, treinos]);
 
   const salvarEdicao = () => {
     const novos = { ...treinos, [dia]: listaEditavel };
@@ -28,6 +38,14 @@ export default function DiaTreinoScreen({
     salvarTreinos(novos);
     setEditando(false);
   };
+
+  const toggleCheck = (index) => {
+    const novos = [...checks];
+    novos[index] = !novos[index];
+    setChecks(novos);
+  };
+
+  const todosConcluidos = checks.every((item) => item);
 
   return (
     <View style={{ flex: 1, padding: 20, backgroundColor: "#fff" }}>
@@ -45,13 +63,23 @@ export default function DiaTreinoScreen({
         renderItem={({ item, index }) => (
           <View
             style={{
+              flexDirection: "row",
+              alignItems: "center",
               padding: 10,
               borderBottomWidth: 1,
               borderColor: "#ccc",
             }}
           >
+            {!editando && (
+              <CheckBox
+                value={checks[index]}
+                onValueChange={() => toggleCheck(index)}
+                style={{ marginRight: 10 }}
+              />
+            )}
+
             {editando ? (
-              <>
+              <View style={{ flex: 1 }}>
                 <TextInput
                   value={item.nome}
                   onChangeText={(txt) => {
@@ -61,7 +89,7 @@ export default function DiaTreinoScreen({
                   }}
                   style={{
                     borderWidth: 1,
-                    padding: 8,
+                    padding: 6,
                     marginBottom: 5,
                     borderRadius: 5,
                   }}
@@ -75,11 +103,11 @@ export default function DiaTreinoScreen({
                   }}
                   style={{
                     borderWidth: 1,
-                    padding: 8,
+                    padding: 6,
                     borderRadius: 5,
                   }}
                 />
-              </>
+              </View>
             ) : (
               <Text style={{ fontSize: 16 }}>
                 {item.nome} - {item.series}
@@ -116,6 +144,21 @@ export default function DiaTreinoScreen({
               Excluir Todos
             </Text>
           </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={registrarTreino}
+            disabled={!todosConcluidos}
+            style={{
+              backgroundColor: todosConcluidos ? "green" : "gray",
+              padding: 12,
+              borderRadius: 8,
+              marginTop: 15,
+            }}
+          >
+            <Text style={{ textAlign: "center", color: "#fff" }}>
+              Concluir Treino
+            </Text>
+          </TouchableOpacity>
         </>
       ) : (
         <>
@@ -143,22 +186,6 @@ export default function DiaTreinoScreen({
             <Text style={{ color: "#fff", textAlign: "center" }}>Cancelar</Text>
           </TouchableOpacity>
         </>
-      )}
-
-      {!editando && (
-        <TouchableOpacity
-          onPress={registrarTreino}
-          style={{
-            backgroundColor: "green",
-            padding: 12,
-            borderRadius: 8,
-            marginTop: 15,
-          }}
-        >
-          <Text style={{ textAlign: "center", color: "#fff" }}>
-            Concluir Treino
-          </Text>
-        </TouchableOpacity>
       )}
     </View>
   );
