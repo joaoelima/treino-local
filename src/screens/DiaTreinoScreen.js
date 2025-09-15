@@ -39,6 +39,16 @@ export default function DiaTreinoScreen({
     setEditando(false);
   };
 
+  const adicionarExercicio = () => {
+    const novos = [
+      ...listaEditavel,
+      { nome: "Novo Exercício", series: "4x10" },
+    ];
+    setListaEditavel(novos);
+    const atualizado = { ...treinos, [dia]: novos };
+    salvarTreinos(atualizado);
+  };
+
   const toggleCheck = (index) => {
     const novos = [...checks];
     novos[index] = !novos[index];
@@ -129,6 +139,20 @@ export default function DiaTreinoScreen({
             }}
           >
             <Text style={{ color: "#fff", textAlign: "center" }}>Editar</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={adicionarExercicio}
+            style={{
+              backgroundColor: "orange",
+              padding: 12,
+              borderRadius: 8,
+              marginVertical: 5,
+            }}
+          >
+            <Text style={{ color: "#fff", textAlign: "center" }}>
+              Adicionar Exercício
+            </Text>
           </TouchableOpacity>
 
           <TouchableOpacity
