@@ -29,8 +29,11 @@ export default function useTreinos(treinoBase) {
 
   const registrarTreino = async () => {
     try {
-      const hoje = new Date().toISOString().split("T")[0];
-      const novoHistorico = { ...historico, [hoje]: "verde" };
+      const hoje = new Date();
+      // Garante formato YYYY-MM-DD no fuso local
+      const dataLocal = hoje.toLocaleDateString("en-CA");
+
+      const novoHistorico = { ...historico, [dataLocal]: "verde" };
       setHistorico(novoHistorico);
       await AsyncStorage.setItem("historico", JSON.stringify(novoHistorico));
     } catch (e) {
