@@ -12,16 +12,14 @@ export default function DiaTreinoScreen({
   dia,
   treinos,
   salvarTreinos,
-  registrarDiaConcluido, // 👈 agora vem do HomeScreen
+  registrarDiaConcluido, // 👈 vem do HomeScreen
   voltar,
 }) {
   const [editando, setEditando] = useState(false);
   const [listaEditavel, setListaEditavel] = useState([...treinos[dia]]);
-  const [checks, setChecks] = useState(
-    treinos[dia].map(() => false) // todos desmarcados no início
-  );
+  const [checks, setChecks] = useState(treinos[dia].map(() => false));
 
-  // Atualiza checks se a lista de treinos mudar
+  // Atualiza sempre que mudar o dia ou a lista de treinos
   useEffect(() => {
     setChecks(treinos[dia].map(() => false));
     setListaEditavel([...treinos[dia]]);
@@ -45,8 +43,7 @@ export default function DiaTreinoScreen({
       { nome: "Novo Exercício", series: "4x10" },
     ];
     setListaEditavel(novos);
-    const atualizado = { ...treinos, [dia]: novos };
-    salvarTreinos(atualizado);
+    salvarTreinos({ ...treinos, [dia]: novos });
   };
 
   const toggleCheck = (index) => {
@@ -59,21 +56,24 @@ export default function DiaTreinoScreen({
 
   const concluirTreino = () => {
     if (todosConcluidos) {
-      registrarDiaConcluido(); // 👈 marca o calendário como verde
-      voltar(); // 👈 volta para a tela inicial depois de concluir
+      registrarDiaConcluido(); // Marca no calendário
+      voltar(); // Volta para a HomeScreen
     }
   };
 
   return (
     <View style={{ flex: 1, padding: 20, backgroundColor: "#fff" }}>
+      {/* Voltar */}
       <TouchableOpacity onPress={voltar} style={{ marginBottom: 10 }}>
         <Text style={{ color: "blue" }}>⬅ Voltar</Text>
       </TouchableOpacity>
 
+      {/* Nome do dia */}
       <Text style={{ fontSize: 20, fontWeight: "bold", marginBottom: 10 }}>
         {dia}
       </Text>
 
+      {/* Lista de exercícios */}
       <FlatList
         data={editando ? listaEditavel : treinos[dia]}
         keyExtractor={(_, index) => index.toString()}
@@ -134,6 +134,7 @@ export default function DiaTreinoScreen({
         )}
       />
 
+      {/* Botões */}
       {!editando ? (
         <>
           <TouchableOpacity

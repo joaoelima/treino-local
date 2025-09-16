@@ -12,13 +12,13 @@ import useTreinos from "../hooks/useTreinos";
 
 const treinoBase = {
   Segunda: [
-    { nome: "Supino Máquina", series: "4x12,10,8,8" },
+    { nome: "Supino Inclinado Barra", series: "4x12" },
     { nome: "Supino Máquina Articulado", series: "4x12,10,8,8" },
     { nome: "Voador", series: "4x12 (pico 2s)" },
     { nome: "Desenvolvimento Máquina", series: "4x12,10,8,8" },
     { nome: "Tríceps Pulley Barra W", series: "4x12" },
     { nome: "Tríceps Francês", series: "4x12" },
-    { nome: "Abdominal", series: "" },
+    { nome: "Abdominal", series: "3x15" },
   ],
   Terça: [
     { nome: "Pulley Pronado", series: "10x10" },
@@ -28,7 +28,7 @@ const treinoBase = {
     { nome: "Voador Inverso", series: "4x12 (pico 2s)" },
     { nome: "Rosca Direta Barra W", series: "4x12" },
     { nome: "Rosca Inclinada Cross", series: "4x12" },
-    { nome: "Abdominal", series: "" },
+    { nome: "Abdominal", series: "3x15" },
   ],
   Quarta: [
     { nome: "Agachamento Smith", series: "4x12" },
@@ -45,14 +45,18 @@ const treinoBase = {
     { nome: "Pulley", series: "4x12" },
     { nome: "Rosca Scott", series: "4x12 (3s contração)" },
     { nome: "Tríceps Testa + Polia Barra", series: "4x12" },
-    { nome: "Abdominal", series: "" },
+    { nome: "Elevação Lateral", series: "4x12" },
+    { nome: "Encolhimento", series: "4x12" },
+    { nome: "Abdominal", series: "3x15" },
   ],
   Sexta: [
     { nome: "Levantamento Terra Romeno", series: "4x12,10,8,8" },
     { nome: "Leg Press 45", series: "4x10" },
     { nome: "Flexora Deitado", series: "4x12" },
     { nome: "Cadeira Abdutora", series: "4x12" },
-    { nome: "Abdominal", series: "" },
+    { nome: "Elevação Lateral", series: "4x12" },
+    { nome: "Encolhimento", series: "4x12" },
+    { nome: "Abdominal", series: "3x15" },
   ],
 };
 

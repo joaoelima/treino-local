@@ -10,11 +10,11 @@
     "android": {
       "package": "com.joaolima.treinolocal"
     },
+    "owner": "joaoedulimadev",
     "extra": {
       "eas": {
-        "projectId": "91847e4f-18fe-4a5f-9771-c31ab6f96db6"
+        "projectId": "11c209ae-cba2-4ee3-bdd1-40a9af489d5b"
       }
-    },
-    "owner": "joaoedulima"
+    }
   }
 }
