@@ -171,6 +171,18 @@ export default function HomeScreen() {
     useTreinos(treinoBase);
   const [diaSelecionado, setDiaSelecionado] = useState(null);
 
+  // 👉 função para marcar automaticamente o dia atual ao concluir treino
+  const registrarDiaConcluido = async () => {
+    const hoje = new Date();
+    const dataKey = `${hoje.getFullYear()}-${String(
+      hoje.getMonth() + 1
+    ).padStart(2, "0")}-${String(hoje.getDate()).padStart(2, "0")}`;
+
+    const novo = { ...historico, [dataKey]: "verde" };
+    setHistorico(novo);
+    await AsyncStorage.setItem("historico", JSON.stringify(novo));
+  };
+
   if (diaSelecionado) {
     return (
       <DiaTreinoScreen
@@ -178,6 +190,7 @@ export default function HomeScreen() {
         treinos={treinos}
         salvarTreinos={salvarTreinos}
         voltar={() => setDiaSelecionado(null)}
+        registrarDiaConcluido={registrarDiaConcluido} // 👈 passa pro filho
       />
     );
   }

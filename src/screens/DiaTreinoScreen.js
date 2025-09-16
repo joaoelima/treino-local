@@ -12,7 +12,7 @@ export default function DiaTreinoScreen({
   dia,
   treinos,
   salvarTreinos,
-  registrarTreino,
+  registrarDiaConcluido, // 👈 agora vem do HomeScreen
   voltar,
 }) {
   const [editando, setEditando] = useState(false);
@@ -56,6 +56,13 @@ export default function DiaTreinoScreen({
   };
 
   const todosConcluidos = checks.every((item) => item);
+
+  const concluirTreino = () => {
+    if (todosConcluidos) {
+      registrarDiaConcluido(); // 👈 marca o calendário como verde
+      voltar(); // 👈 volta para a tela inicial depois de concluir
+    }
+  };
 
   return (
     <View style={{ flex: 1, padding: 20, backgroundColor: "#fff" }}>
@@ -170,7 +177,7 @@ export default function DiaTreinoScreen({
           </TouchableOpacity>
 
           <TouchableOpacity
-            onPress={registrarTreino}
+            onPress={concluirTreino}
             disabled={!todosConcluidos}
             style={{
               backgroundColor: todosConcluidos ? "green" : "gray",
