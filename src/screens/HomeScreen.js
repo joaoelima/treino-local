@@ -93,7 +93,9 @@ export default function HomeScreen() {
         markedDates={Object.fromEntries(
           Object.entries(historico).map(([data, cor]) => [
             data,
-            { marked: true, dotColor: cor === "verde" ? "green" : "red" },
+            cor === "verde"
+              ? { selected: true, selectedColor: "green" }
+              : { selected: true, selectedColor: "red" },
           ])
         )}
       />
