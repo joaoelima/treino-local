@@ -51,7 +51,7 @@ const treinoBase = {
 };
 
 export default function HomeScreen() {
-  const { treinos, setTreinos, historico, salvarTreinos, registrarTreino } =
+  const { treinos, salvarTreinos, historico, setHistorico } =
     useTreinos(treinoBase);
   const [diaSelecionado, setDiaSelecionado] = useState(null);
 
@@ -61,11 +61,25 @@ export default function HomeScreen() {
         dia={diaSelecionado}
         treinos={treinos}
         salvarTreinos={salvarTreinos}
-        registrarTreino={registrarTreino}
         voltar={() => setDiaSelecionado(null)}
       />
     );
   }
+
+  const toggleDia = async (data) => {
+    const novoHistorico = { ...historico };
+
+    if (novoHistorico[data]) {
+      // se já estava marcado, desmarca
+      delete novoHistorico[data];
+    } else {
+      // marca como verde
+      novoHistorico[data] = "verde";
+    }
+
+    setHistorico(novoHistorico);
+    await AsyncStorage.setItem("historico", JSON.stringify(novoHistorico));
+  };
 
   return (
     <ScrollView style={{ flex: 1, padding: 20, backgroundColor: "#fff" }}>
@@ -90,12 +104,11 @@ export default function HomeScreen() {
         Calendário
       </Text>
       <Calendar
+        onDayPress={(day) => toggleDia(day.dateString)}
         markedDates={Object.fromEntries(
-          Object.entries(historico).map(([data, cor]) => [
+          Object.entries(historico).map(([data]) => [
             data,
-            cor === "verde"
-              ? { selected: true, selectedColor: "green" }
-              : { selected: true, selectedColor: "red" },
+            { selected: true, selectedColor: "green" },
           ])
         )}
       />
