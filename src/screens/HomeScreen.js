@@ -1,6 +1,12 @@
 import React, { useState } from "react";
-import { View, Text, TouchableOpacity, ScrollView } from "react-native";
-import { Calendar } from "react-native-calendars";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  ScrollView,
+  StyleSheet,
+} from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import DiaTreinoScreen from "./DiaTreinoScreen";
 import useTreinos from "../hooks/useTreinos";
 
@@ -50,6 +56,116 @@ const treinoBase = {
   ],
 };
 
+// --------- CALENDÁRIO CUSTOM ---------
+function CalendarioCustom({ historico, setHistorico }) {
+  const hoje = new Date();
+  const [mesAtual, setMesAtual] = useState(hoje.getMonth()); // 0=jan
+  const [anoAtual, setAnoAtual] = useState(hoje.getFullYear());
+
+  const diasNoMes = new Date(anoAtual, mesAtual + 1, 0).getDate();
+  const primeiroDiaSemana = new Date(anoAtual, mesAtual, 1).getDay(); // 0=Dom
+
+  const toggleDia = async (dia) => {
+    const dataKey = `${anoAtual}-${String(mesAtual + 1).padStart(
+      2,
+      "0"
+    )}-${String(dia).padStart(2, "0")}`;
+
+    const novo = { ...historico };
+    if (novo[dataKey]) {
+      delete novo[dataKey];
+    } else {
+      novo[dataKey] = "verde";
+    }
+    setHistorico(novo);
+    await AsyncStorage.setItem("historico", JSON.stringify(novo));
+  };
+
+  const mudarMes = (delta) => {
+    let novoMes = mesAtual + delta;
+    let novoAno = anoAtual;
+
+    if (novoMes < 0) {
+      novoMes = 11;
+      novoAno -= 1;
+    } else if (novoMes > 11) {
+      novoMes = 0;
+      novoAno += 1;
+    }
+
+    setMesAtual(novoMes);
+    setAnoAtual(novoAno);
+  };
+
+  const renderDias = () => {
+    const dias = [];
+    // Espaços antes do primeiro dia
+    for (
+      let i = 0;
+      i < (primeiroDiaSemana === 0 ? 6 : primeiroDiaSemana - 1);
+      i++
+    ) {
+      dias.push(<View key={`vazio-${i}`} style={styles.diaVazio} />);
+    }
+
+    for (let d = 1; d <= diasNoMes; d++) {
+      const dataKey = `${anoAtual}-${String(mesAtual + 1).padStart(
+        2,
+        "0"
+      )}-${String(d).padStart(2, "0")}`;
+      const marcado = historico[dataKey];
+      dias.push(
+        <TouchableOpacity
+          key={d}
+          onPress={() => toggleDia(d)}
+          style={[
+            styles.dia,
+            marcado
+              ? { backgroundColor: "green" }
+              : { backgroundColor: "#eee" },
+          ]}
+        >
+          <Text style={{ color: marcado ? "#fff" : "#000" }}>{d}</Text>
+        </TouchableOpacity>
+      );
+    }
+    return dias;
+  };
+
+  return (
+    <View style={{ marginTop: 20 }}>
+      {/* Header com navegação */}
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => mudarMes(-1)}>
+          <Text style={styles.seta}>◀</Text>
+        </TouchableOpacity>
+        <Text style={styles.titulo}>
+          {new Date(anoAtual, mesAtual).toLocaleString("pt-BR", {
+            month: "long",
+            year: "numeric",
+          })}
+        </Text>
+        <TouchableOpacity onPress={() => mudarMes(1)}>
+          <Text style={styles.seta}>▶</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Cabeçalho dos dias */}
+      <View style={styles.semana}>
+        {["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"].map((dia) => (
+          <Text key={dia} style={styles.cabecalho}>
+            {dia}
+          </Text>
+        ))}
+      </View>
+
+      {/* Dias */}
+      <View style={styles.grade}>{renderDias()}</View>
+    </View>
+  );
+}
+
+// --------- HOMESCREEN ---------
 export default function HomeScreen() {
   const { treinos, salvarTreinos, historico, setHistorico } =
     useTreinos(treinoBase);
@@ -65,21 +181,6 @@ export default function HomeScreen() {
       />
     );
   }
-
-  const toggleDia = async (data) => {
-    const novoHistorico = { ...historico };
-
-    if (novoHistorico[data]) {
-      // se já estava marcado, desmarca
-      delete novoHistorico[data];
-    } else {
-      // marca como verde
-      novoHistorico[data] = "verde";
-    }
-
-    setHistorico(novoHistorico);
-    await AsyncStorage.setItem("historico", JSON.stringify(novoHistorico));
-  };
 
   return (
     <ScrollView style={{ flex: 1, padding: 20, backgroundColor: "#fff" }}>
@@ -100,18 +201,51 @@ export default function HomeScreen() {
           <Text style={{ fontSize: 18 }}>{dia}</Text>
         </TouchableOpacity>
       ))}
+
       <Text style={{ fontSize: 22, fontWeight: "bold", marginVertical: 20 }}>
         Calendário
       </Text>
-      <Calendar
-        onDayPress={(day) => toggleDia(day.dateString)}
-        markedDates={Object.fromEntries(
-          Object.entries(historico).map(([data]) => [
-            data,
-            { selected: true, selectedColor: "green" },
-          ])
-        )}
-      />
+      <CalendarioCustom historico={historico} setHistorico={setHistorico} />
     </ScrollView>
   );
 }
+
+const styles = StyleSheet.create({
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 10,
+  },
+  titulo: {
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+  seta: {
+    fontSize: 20,
+    paddingHorizontal: 10,
+  },
+  semana: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    marginBottom: 5,
+  },
+  cabecalho: { width: 40, textAlign: "center", fontWeight: "bold" },
+  grade: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+  },
+  dia: {
+    width: 40,
+    height: 40,
+    margin: 2,
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 6,
+  },
+  diaVazio: {
+    width: 40,
+    height: 40,
+    margin: 2,
+  },
+});
