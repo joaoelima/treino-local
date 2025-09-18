@@ -5,8 +5,6 @@ import {
   TouchableOpacity,
   StyleSheet,
   TextInput,
-  KeyboardAvoidingView,
-  Platform,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import DiaTreinoScreen from "./DiaTreinoScreen";
@@ -45,6 +43,7 @@ const treinoBase = {
   ],
   Quinta: [
     { nome: "Supino Máquina", series: "4x12" },
+    { nome: "Crucifixo Polia", series: "4x12" },
     { nome: "Desenvolvimento Halteres", series: "4x12,10,8,8" },
     { nome: "Remada Baixa Fechada", series: "4x10" },
     { nome: "Pulley", series: "4x12" },
@@ -71,8 +70,13 @@ function CalendarioCustom({ historico, setHistorico }) {
   const [mesAtual, setMesAtual] = useState(hoje.getMonth());
   const [anoAtual, setAnoAtual] = useState(hoje.getFullYear());
 
+  // mesmas dimensões para header e células
+  const CELL = 40;
+  const GAP = 2;
+  const GRID_WIDTH = (CELL + GAP * 2) * 7; // largura exata de 7 colunas
+
   const diasNoMes = new Date(anoAtual, mesAtual + 1, 0).getDate();
-  const primeiroDiaSemana = new Date(anoAtual, mesAtual, 1).getDay();
+  const primeiroDiaSemana = new Date(anoAtual, mesAtual, 1).getDay(); // 0=Dom
 
   const toggleDia = async (dia) => {
     const dataKey = `${anoAtual}-${String(mesAtual + 1).padStart(
@@ -93,7 +97,6 @@ function CalendarioCustom({ historico, setHistorico }) {
   const mudarMes = (delta) => {
     let novoMes = mesAtual + delta;
     let novoAno = anoAtual;
-
     if (novoMes < 0) {
       novoMes = 11;
       novoAno -= 1;
@@ -101,21 +104,25 @@ function CalendarioCustom({ historico, setHistorico }) {
       novoMes = 0;
       novoAno += 1;
     }
-
     setMesAtual(novoMes);
     setAnoAtual(novoAno);
   };
 
   const renderDias = () => {
     const dias = [];
+    // preencher espaços antes do 1º dia (semana começando na segunda)
     for (
       let i = 0;
       i < (primeiroDiaSemana === 0 ? 6 : primeiroDiaSemana - 1);
       i++
     ) {
-      dias.push(<View key={`vazio-${i}`} style={styles.diaVazio} />);
+      dias.push(
+        <View
+          key={`vazio-${i}`}
+          style={[styles.diaVazio, { width: CELL, height: CELL, margin: GAP }]}
+        />
+      );
     }
-
     for (let d = 1; d <= diasNoMes; d++) {
       const dataKey = `${anoAtual}-${String(mesAtual + 1).padStart(
         2,
@@ -128,6 +135,7 @@ function CalendarioCustom({ historico, setHistorico }) {
           onPress={() => toggleDia(d)}
           style={[
             styles.dia,
+            { width: CELL, height: CELL, margin: GAP },
             marcado
               ? { backgroundColor: "green" }
               : { backgroundColor: "#eee" },
@@ -157,15 +165,25 @@ function CalendarioCustom({ historico, setHistorico }) {
         </TouchableOpacity>
       </View>
 
-      <View style={styles.semana}>
+      {/* Cabeçalho alinhado exatamente à grade */}
+      <View style={[styles.semana, { width: GRID_WIDTH, alignSelf: "center" }]}>
         {["S", "T", "Q", "Q", "S", "S", "D"].map((dia, i) => (
-          <Text key={i} style={styles.cabecalho}>
+          <Text
+            key={i}
+            style={[
+              styles.cabecalho,
+              { width: CELL, height: CELL, lineHeight: CELL, margin: GAP },
+            ]}
+          >
             {dia}
           </Text>
         ))}
       </View>
 
-      <View style={styles.grade}>{renderDias()}</View>
+      {/* Grade com a MESMA largura do cabeçalho */}
+      <View style={[styles.grade, { width: GRID_WIDTH, alignSelf: "center" }]}>
+        {renderDias()}
+      </View>
     </View>
   );
 }
@@ -178,10 +196,7 @@ export default function HomeScreen() {
   const [editandoNome, setEditandoNome] = useState(null);
   const [novoNome, setNovoNome] = useState("");
   const [dias, setDias] = useState(
-    Object.keys(treinos).map((dia) => ({
-      key: dia,
-      label: dia,
-    }))
+    Object.keys(treinos).map((dia) => ({ key: dia, label: dia }))
   );
 
   const registrarDiaConcluido = async () => {
@@ -189,7 +204,6 @@ export default function HomeScreen() {
     const dataKey = `${hoje.getFullYear()}-${String(
       hoje.getMonth() + 1
     ).padStart(2, "0")}-${String(hoje.getDate()).padStart(2, "0")}`;
-
     const novo = { ...historico, [dataKey]: "verde" };
     setHistorico(novo);
     await AsyncStorage.setItem("historico", JSON.stringify(novo));
@@ -209,19 +223,15 @@ export default function HomeScreen() {
 
   const handleRenomear = (diaAntigo, diaNovo) => {
     if (!diaNovo.trim() || treinos[diaNovo]) return;
-
-    // Atualiza treinos no AsyncStorage
     const novoTreinos = { ...treinos };
     novoTreinos[diaNovo] = novoTreinos[diaAntigo];
     delete novoTreinos[diaAntigo];
     salvarTreinos(novoTreinos);
-
-    // Atualiza lista local (dias) imediatamente
-    const novosDias = dias.map((d) =>
-      d.key === diaAntigo ? { ...d, key: diaNovo, label: diaNovo } : d
+    setDias((prev) =>
+      prev.map((d) =>
+        d.key === diaAntigo ? { ...d, key: diaNovo, label: diaNovo } : d
+      )
     );
-    setDias(novosDias);
-
     setEditandoNome(null);
   };
 
@@ -231,7 +241,7 @@ export default function HomeScreen() {
       novoTreinos[item.key] = treinos[item.key];
     });
     salvarTreinos(novoTreinos);
-    setDias(novaOrdem); // Atualiza lista local na hora
+    setDias(novaOrdem);
   };
 
   const renderItem = ({ item, drag, isActive }) => (
@@ -258,7 +268,7 @@ export default function HomeScreen() {
               value={novoNome}
               onChangeText={setNovoNome}
               onSubmitEditing={() => handleRenomear(item.key, novoNome)}
-              onBlur={() => setEditandoNome(null)} // fecha ao clicar fora
+              onBlur={() => setEditandoNome(null)}
               style={{
                 borderWidth: 1,
                 padding: 6,
@@ -285,9 +295,9 @@ export default function HomeScreen() {
 
         {/* Handle para arrastar */}
         <TouchableOpacity
-          onLongPress={drag}
+          onPressIn={drag}
           disabled={isActive}
-          style={{ marginLeft: 10 }}
+          style={{ marginLeft: 10, padding: 5 }}
         >
           <Text style={{ fontSize: 22 }}>⋮⋮</Text>
         </TouchableOpacity>
@@ -308,6 +318,8 @@ export default function HomeScreen() {
           keyExtractor={(item) => item.key}
           renderItem={renderItem}
           keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
+          activationDistance={10}
         />
 
         <Text style={{ fontSize: 22, fontWeight: "bold", marginVertical: 20 }}>
@@ -333,50 +345,35 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 10,
   },
-  titulo: {
-    fontSize: 18,
-    fontWeight: "bold",
-  },
-  seta: {
-    fontSize: 20,
-    paddingHorizontal: 10,
-  },
+  titulo: { fontSize: 18, fontWeight: "bold" },
+  seta: { fontSize: 20, paddingHorizontal: 10 },
+
+  // ROW do cabeçalho, agora NÃO usa space-between, recebe width fixa via inline
   semana: {
     flexDirection: "row",
-    justifyContent: "space-around",
     marginBottom: 5,
   },
+  // cada letra ocupa exatamente o mesmo espaço que um quadrado do calendário
   cabecalho: {
-    width: 40, // alinhado com quadrados
-    height: 40,
     textAlign: "center",
     fontWeight: "bold",
-    lineHeight: 40, // centraliza verticalmente
   },
+
+  // grade usa a mesma largura do cabeçalho (passada inline)
   grade: {
     flexDirection: "row",
     flexWrap: "wrap",
   },
   dia: {
-    width: 40,
-    height: 40,
-    margin: 2,
     justifyContent: "center",
     alignItems: "center",
     borderRadius: 6,
   },
-  diaVazio: {
-    width: 40,
-    height: 40,
-    margin: 2,
-  },
+  diaVazio: {},
   footer: {
     padding: 10,
     backgroundColor: "#f5f5f5",
     alignItems: "center",
   },
-  footerText: {
-    fontSize: 12,
-    color: "#666",
-  },
+  footerText: { fontSize: 12, color: "#666" },
 });
