@@ -5,6 +5,8 @@ import {
   TouchableOpacity,
   StyleSheet,
   TextInput,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import DiaTreinoScreen from "./DiaTreinoScreen";
@@ -279,7 +281,10 @@ export default function HomeScreen() {
   );
 
   return (
-    <View style={{ flex: 1, padding: 20, backgroundColor: "#fff" }}>
+    <KeyboardAvoidingView
+      style={{ flex: 1, padding: 20, backgroundColor: "#fff" }}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+    >
       <Text style={{ fontSize: 22, fontWeight: "bold", marginBottom: 20 }}>
         Dias da Semana
       </Text>
@@ -289,13 +294,14 @@ export default function HomeScreen() {
         onDragEnd={({ data }) => handleReorder(data)}
         keyExtractor={(item) => item.key}
         renderItem={renderItem}
+        keyboardShouldPersistTaps="handled"
       />
 
       <Text style={{ fontSize: 22, fontWeight: "bold", marginVertical: 20 }}>
         Calendário
       </Text>
       <CalendarioCustom historico={historico} setHistorico={setHistorico} />
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 
