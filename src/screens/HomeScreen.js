@@ -3,7 +3,6 @@ import {
   View,
   Text,
   TouchableOpacity,
-  ScrollView,
   StyleSheet,
   TextInput,
 } from "react-native";
@@ -16,13 +15,13 @@ import DraggableFlatList, {
 
 const treinoBase = {
   Segunda: [
-    { nome: "Supino Inclinado Barra", series: "4x12" },
+    { nome: "Supino Máquina", series: "4x12,10,8,8" },
     { nome: "Supino Máquina Articulado", series: "4x12,10,8,8" },
     { nome: "Voador", series: "4x12 (pico 2s)" },
     { nome: "Desenvolvimento Máquina", series: "4x12,10,8,8" },
     { nome: "Tríceps Pulley Barra W", series: "4x12" },
     { nome: "Tríceps Francês", series: "4x12" },
-    { nome: "Abdominal", series: "3x15" },
+    { nome: "Abdominal", series: "" },
   ],
   Terça: [
     { nome: "Pulley Pronado", series: "10x10" },
@@ -32,7 +31,7 @@ const treinoBase = {
     { nome: "Voador Inverso", series: "4x12 (pico 2s)" },
     { nome: "Rosca Direta Barra W", series: "4x12" },
     { nome: "Rosca Inclinada Cross", series: "4x12" },
-    { nome: "Abdominal", series: "3x15" },
+    { nome: "Abdominal", series: "" },
   ],
   Quarta: [
     { nome: "Agachamento Smith", series: "4x12" },
@@ -49,29 +48,25 @@ const treinoBase = {
     { nome: "Pulley", series: "4x12" },
     { nome: "Rosca Scott", series: "4x12 (3s contração)" },
     { nome: "Tríceps Testa + Polia Barra", series: "4x12" },
-    { nome: "Elevação Lateral", series: "4x12" },
-    { nome: "Encolhimento", series: "4x12" },
-    { nome: "Abdominal", series: "3x15" },
+    { nome: "Abdominal", series: "" },
   ],
   Sexta: [
     { nome: "Levantamento Terra Romeno", series: "4x12,10,8,8" },
     { nome: "Leg Press 45", series: "4x10" },
     { nome: "Flexora Deitado", series: "4x12" },
     { nome: "Cadeira Abdutora", series: "4x12" },
-    { nome: "Elevação Lateral", series: "4x12" },
-    { nome: "Encolhimento", series: "4x12" },
-    { nome: "Abdominal", series: "3x15" },
+    { nome: "Abdominal", series: "" },
   ],
 };
 
 // --------- CALENDÁRIO CUSTOM ---------
 function CalendarioCustom({ historico, setHistorico }) {
   const hoje = new Date();
-  const [mesAtual, setMesAtual] = useState(hoje.getMonth()); // 0=jan
+  const [mesAtual, setMesAtual] = useState(hoje.getMonth());
   const [anoAtual, setAnoAtual] = useState(hoje.getFullYear());
 
   const diasNoMes = new Date(anoAtual, mesAtual + 1, 0).getDate();
-  const primeiroDiaSemana = new Date(anoAtual, mesAtual, 1).getDay(); // 0=Dom
+  const primeiroDiaSemana = new Date(anoAtual, mesAtual, 1).getDay();
 
   const toggleDia = async (dia) => {
     const dataKey = `${anoAtual}-${String(mesAtual + 1).padStart(
@@ -177,7 +172,6 @@ export default function HomeScreen() {
   const [editandoNome, setEditandoNome] = useState(null);
   const [novoNome, setNovoNome] = useState("");
 
-  // 👉 função para marcar automaticamente o dia atual ao concluir treino
   const registrarDiaConcluido = async () => {
     const hoje = new Date();
     const dataKey = `${hoje.getFullYear()}-${String(
@@ -247,12 +241,14 @@ export default function HomeScreen() {
               value={novoNome}
               onChangeText={setNovoNome}
               onSubmitEditing={() => handleRenomear(item.key, novoNome)}
+              onBlur={() => setEditandoNome(null)} // fecha ao clicar fora
               style={{
                 borderWidth: 1,
                 padding: 6,
                 borderRadius: 5,
                 backgroundColor: "#fff",
               }}
+              autoFocus
             />
           ) : (
             <Text style={{ fontSize: 18 }}>{item.key}</Text>
@@ -283,7 +279,7 @@ export default function HomeScreen() {
   );
 
   return (
-    <ScrollView style={{ flex: 1, padding: 20, backgroundColor: "#fff" }}>
+    <View style={{ flex: 1, padding: 20, backgroundColor: "#fff" }}>
       <Text style={{ fontSize: 22, fontWeight: "bold", marginBottom: 20 }}>
         Dias da Semana
       </Text>
@@ -299,7 +295,7 @@ export default function HomeScreen() {
         Calendário
       </Text>
       <CalendarioCustom historico={historico} setHistorico={setHistorico} />
-    </ScrollView>
+    </View>
   );
 }
 
