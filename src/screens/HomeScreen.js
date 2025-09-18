@@ -296,27 +296,33 @@ export default function HomeScreen() {
   );
 
   return (
-    <KeyboardAvoidingView
-      style={{ flex: 1, padding: 20, backgroundColor: "#fff" }}
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
-    >
-      <Text style={{ fontSize: 22, fontWeight: "bold", marginBottom: 20 }}>
-        Dias da Semana
-      </Text>
+    <View style={{ flex: 1, backgroundColor: "#fff" }}>
+      <View style={{ flex: 1, padding: 20 }}>
+        <Text style={{ fontSize: 22, fontWeight: "bold", marginBottom: 20 }}>
+          Dias da Semana
+        </Text>
 
-      <DraggableFlatList
-        data={dias}
-        onDragEnd={({ data }) => handleReorder(data)}
-        keyExtractor={(item) => item.key}
-        renderItem={renderItem}
-        keyboardShouldPersistTaps="handled"
-      />
+        <DraggableFlatList
+          data={dias}
+          onDragEnd={({ data }) => handleReorder(data)}
+          keyExtractor={(item) => item.key}
+          renderItem={renderItem}
+          keyboardShouldPersistTaps="handled"
+        />
 
-      <Text style={{ fontSize: 22, fontWeight: "bold", marginVertical: 20 }}>
-        Calendário
-      </Text>
-      <CalendarioCustom historico={historico} setHistorico={setHistorico} />
-    </KeyboardAvoidingView>
+        <Text style={{ fontSize: 22, fontWeight: "bold", marginVertical: 20 }}>
+          Calendário
+        </Text>
+        <CalendarioCustom historico={historico} setHistorico={setHistorico} />
+      </View>
+
+      {/* Rodapé */}
+      <View style={styles.footer}>
+        <Text style={styles.footerText}>
+          © 2025 Desenvolvido por João Eduardo Lima
+        </Text>
+      </View>
+    </View>
   );
 }
 
@@ -341,13 +347,16 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   cabecalho: {
-    width: 40, // igual ao quadradinho do dia
-    height: 40, // opcional, se quiser centralizar verticalmente
+    width: 40, // alinhado com quadrados
+    height: 40,
     textAlign: "center",
     fontWeight: "bold",
-    lineHeight: 40, // centraliza no meio, igual aos números
+    lineHeight: 40, // centraliza verticalmente
   },
-
+  grade: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+  },
   dia: {
     width: 40,
     height: 40,
@@ -360,5 +369,14 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     margin: 2,
+  },
+  footer: {
+    padding: 10,
+    backgroundColor: "#f5f5f5",
+    alignItems: "center",
+  },
+  footerText: {
+    fontSize: 12,
+    color: "#666",
   },
 });
