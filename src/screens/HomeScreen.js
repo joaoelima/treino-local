@@ -158,8 +158,8 @@ function CalendarioCustom({ historico, setHistorico }) {
       </View>
 
       <View style={styles.semana}>
-        {["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"].map((dia) => (
-          <Text key={dia} style={styles.cabecalho}>
+        {["S", "T", "Q", "Q", "S", "S", "D"].map((dia, i) => (
+          <Text key={i} style={styles.cabecalho}>
             {dia}
           </Text>
         ))}
@@ -340,11 +340,14 @@ const styles = StyleSheet.create({
     justifyContent: "space-around",
     marginBottom: 5,
   },
-  cabecalho: { width: 40, textAlign: "center", fontWeight: "bold" },
-  grade: {
-    flexDirection: "row",
-    flexWrap: "wrap",
+  cabecalho: {
+    width: 40, // igual ao quadradinho do dia
+    height: 40, // opcional, se quiser centralizar verticalmente
+    textAlign: "center",
+    fontWeight: "bold",
+    lineHeight: 40, // centraliza no meio, igual aos números
   },
+
   dia: {
     width: 40,
     height: 40,
