@@ -254,6 +254,7 @@ export default function HomeScreen() {
           opacity: isActive ? 0.7 : 1,
         }}
       >
+        {/* Botão principal para abrir os treinos */}
         <TouchableOpacity
           onPress={() => setDiaSelecionado(item.key)}
           style={{
@@ -262,6 +263,7 @@ export default function HomeScreen() {
             backgroundColor: "#eee",
             borderRadius: 8,
           }}
+          disabled={isActive} // impede conflito durante drag
         >
           {editandoNome === item.key ? (
             <TextInput
@@ -289,13 +291,14 @@ export default function HomeScreen() {
             setNovoNome(item.key);
           }}
           style={{ marginLeft: 5 }}
+          disabled={isActive} // impede conflito durante drag
         >
           <Text style={{ color: "blue" }}>✎</Text>
         </TouchableOpacity>
 
         {/* Handle para arrastar */}
         <TouchableOpacity
-          onPressIn={drag}
+          onLongPress={drag}
           disabled={isActive}
           style={{ marginLeft: 10, padding: 5 }}
         >
