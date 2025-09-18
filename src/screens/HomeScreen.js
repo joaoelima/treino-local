@@ -5,10 +5,14 @@ import {
   TouchableOpacity,
   ScrollView,
   StyleSheet,
+  TextInput,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import DiaTreinoScreen from "./DiaTreinoScreen";
 import useTreinos from "../hooks/useTreinos";
+import DraggableFlatList, {
+  ScaleDecorator,
+} from "react-native-draggable-flatlist";
 
 const treinoBase = {
   Segunda: [
@@ -103,7 +107,6 @@ function CalendarioCustom({ historico, setHistorico }) {
 
   const renderDias = () => {
     const dias = [];
-    // Espaços antes do primeiro dia
     for (
       let i = 0;
       i < (primeiroDiaSemana === 0 ? 6 : primeiroDiaSemana - 1);
@@ -138,7 +141,6 @@ function CalendarioCustom({ historico, setHistorico }) {
 
   return (
     <View style={{ marginTop: 20 }}>
-      {/* Header com navegação */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => mudarMes(-1)}>
           <Text style={styles.seta}>◀</Text>
@@ -154,7 +156,6 @@ function CalendarioCustom({ historico, setHistorico }) {
         </TouchableOpacity>
       </View>
 
-      {/* Cabeçalho dos dias */}
       <View style={styles.semana}>
         {["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"].map((dia) => (
           <Text key={dia} style={styles.cabecalho}>
@@ -163,7 +164,6 @@ function CalendarioCustom({ historico, setHistorico }) {
         ))}
       </View>
 
-      {/* Dias */}
       <View style={styles.grade}>{renderDias()}</View>
     </View>
   );
@@ -174,6 +174,8 @@ export default function HomeScreen() {
   const { treinos, salvarTreinos, historico, setHistorico } =
     useTreinos(treinoBase);
   const [diaSelecionado, setDiaSelecionado] = useState(null);
+  const [editandoNome, setEditandoNome] = useState(null);
+  const [novoNome, setNovoNome] = useState("");
 
   // 👉 função para marcar automaticamente o dia atual ao concluir treino
   const registrarDiaConcluido = async () => {
@@ -194,30 +196,104 @@ export default function HomeScreen() {
         treinos={treinos}
         salvarTreinos={salvarTreinos}
         voltar={() => setDiaSelecionado(null)}
-        registrarDiaConcluido={registrarDiaConcluido} // 👈 passa pro filho
+        registrarDiaConcluido={registrarDiaConcluido}
       />
     );
   }
+
+  const dias = Object.keys(treinos).map((dia) => ({
+    key: dia,
+    label: dia,
+  }));
+
+  const handleRenomear = (diaAntigo, diaNovo) => {
+    if (!diaNovo.trim() || treinos[diaNovo]) return;
+    const novoTreinos = { ...treinos };
+    novoTreinos[diaNovo] = novoTreinos[diaAntigo];
+    delete novoTreinos[diaAntigo];
+    salvarTreinos(novoTreinos);
+    setEditandoNome(null);
+  };
+
+  const handleReorder = (novaOrdem) => {
+    const novoTreinos = {};
+    novaOrdem.forEach((item) => {
+      novoTreinos[item.key] = treinos[item.key];
+    });
+    salvarTreinos(novoTreinos);
+  };
+
+  const renderItem = ({ item, drag, isActive }) => (
+    <ScaleDecorator>
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          marginBottom: 10,
+          opacity: isActive ? 0.7 : 1,
+        }}
+      >
+        <TouchableOpacity
+          onPress={() => setDiaSelecionado(item.key)}
+          style={{
+            flex: 1,
+            padding: 15,
+            backgroundColor: "#eee",
+            borderRadius: 8,
+          }}
+        >
+          {editandoNome === item.key ? (
+            <TextInput
+              value={novoNome}
+              onChangeText={setNovoNome}
+              onSubmitEditing={() => handleRenomear(item.key, novoNome)}
+              style={{
+                borderWidth: 1,
+                padding: 6,
+                borderRadius: 5,
+                backgroundColor: "#fff",
+              }}
+            />
+          ) : (
+            <Text style={{ fontSize: 18 }}>{item.key}</Text>
+          )}
+        </TouchableOpacity>
+
+        {/* Editar nome */}
+        <TouchableOpacity
+          onPress={() => {
+            setEditandoNome(item.key);
+            setNovoNome(item.key);
+          }}
+          style={{ marginLeft: 5 }}
+        >
+          <Text style={{ color: "blue" }}>✎</Text>
+        </TouchableOpacity>
+
+        {/* Handle para arrastar */}
+        <TouchableOpacity
+          onLongPress={drag}
+          disabled={isActive}
+          style={{ marginLeft: 10 }}
+        >
+          <Text style={{ fontSize: 22 }}>⋮⋮</Text>
+        </TouchableOpacity>
+      </View>
+    </ScaleDecorator>
+  );
 
   return (
     <ScrollView style={{ flex: 1, padding: 20, backgroundColor: "#fff" }}>
       <Text style={{ fontSize: 22, fontWeight: "bold", marginBottom: 20 }}>
         Dias da Semana
       </Text>
-      {Object.keys(treinoBase).map((dia) => (
-        <TouchableOpacity
-          key={dia}
-          onPress={() => setDiaSelecionado(dia)}
-          style={{
-            padding: 15,
-            backgroundColor: "#eee",
-            marginBottom: 10,
-            borderRadius: 8,
-          }}
-        >
-          <Text style={{ fontSize: 18 }}>{dia}</Text>
-        </TouchableOpacity>
-      ))}
+
+      <DraggableFlatList
+        data={dias}
+        onDragEnd={({ data }) => handleReorder(data)}
+        keyExtractor={(item) => item.key}
+        renderItem={renderItem}
+      />
 
       <Text style={{ fontSize: 22, fontWeight: "bold", marginVertical: 20 }}>
         Calendário
